@@ -153,7 +153,7 @@ export default class WikiOTDPlugin extends Plugin {
 	onunload() {}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData() as Partial<MyPluginSettings>);
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData() as Partial<WikiOTDPluginSettings>);
 	}
 
 	async saveSettings() {
