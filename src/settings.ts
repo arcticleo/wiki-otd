@@ -82,14 +82,17 @@ export class WikiOTDSettingTab extends PluginSettingTab {
 	display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
-		containerEl.createEl("h2", { text: "On This Day in History" });
-		containerEl.createEl("p", {
-			text: "Control how dates and timezones are interpreted when fetching Wikipedia content."
-		});
 
 		const systemTz = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 
 		let tzSelectEl: HTMLSelectElement | null = null;
+
+		new Setting(containerEl)
+			.setName("On This Day in History")
+			.setHeading();
+		
+		new Setting(containerEl)
+			.setDesc("Control how dates and timezones are interpreted when fetching Wikipedia content.");
 
 		new Setting(containerEl)
 			.setName("Timezone")
