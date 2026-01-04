@@ -3,7 +3,7 @@
 	"name": "On This Day in History",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": ".",
+	"description": "Fetch what happened today in history from Wikipedia.",
 	"author": "Michael Edlund",
 	"authorUrl": "https://eme.moi",
 	"fundingUrl": "https://eme.moi/wiki-otd",
