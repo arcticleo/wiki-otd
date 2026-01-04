@@ -88,12 +88,9 @@ export class WikiOTDSettingTab extends PluginSettingTab {
 		let tzSelectEl: HTMLSelectElement | null = null;
 
 		new Setting(containerEl)
-			.setName("On This Day in History")
+			.setName("Location")
 			.setHeading();
 		
-		new Setting(containerEl)
-			.setDesc("Control how dates and timezones are interpreted when fetching Wikipedia content.");
-
 		new Setting(containerEl)
 			.setName("Timezone")
 			.setDesc("Auto uses your system timezone. Manual lets you choose one.")

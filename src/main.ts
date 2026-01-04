@@ -29,6 +29,10 @@ export default class WikiOTDPlugin extends Plugin {
 	}
 
 	private async fetchOnThisDayMarkdown(date: Date): Promise<string> {
+		type MediaWikiParseResponse = {
+			parse?: { text?: string };
+		};
+
 		const title = this.wikipediaTitleForDate(date);
 
 		// MediaWiki Action API: parse page -> HTML
@@ -45,8 +49,8 @@ export default class WikiOTDPlugin extends Plugin {
 			}
 		});
 
-		const json = res.json as any;
-		const html = json?.parse?.text as string | undefined;
+		const json = res.json as MediaWikiParseResponse;
+		const html = json.parse?.text;
 		if (!html) throw new Error('Unexpected API response');
 
 		const sectionsHtml = this.extractWikipediaSectionsHtml(html, ['Events', 'Births', 'Deaths']);
@@ -66,8 +70,8 @@ export default class WikiOTDPlugin extends Plugin {
 	}
 
 	private extractWikipediaSectionsHtml(html: string, sectionIds: string[]): string {
-		const container = document.createElement('div');
-		container.innerHTML = html;
+		const doc = new DOMParser().parseFromString(html, "text/html");
+		const container = doc.body;
 
 		// Remove common noise that still sneaks into extracted sections
 		container.querySelectorAll(
@@ -114,7 +118,7 @@ export default class WikiOTDPlugin extends Plugin {
 		await this.loadSettings();
 
 		// Ribbon icon: inserts into the active markdown note
-		this.addRibbonIcon('calendar-clock', 'On This Day in History', async () => {
+		this.addRibbonIcon('calendar-clock', 'On this day in history', async () => {
 			const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 			if (!view) {
 				new Notice('No active note');
@@ -122,21 +126,21 @@ export default class WikiOTDPlugin extends Plugin {
 			}
 
 			try {
-				new Notice('Fetching Wikipedia “On this day”…');
+				new Notice('Fetching Wikipedia for this day…');
 				await this.insertTodayIntoActiveEditor(view.editor);
 				new Notice('Inserted.');
 			} catch (err) {
 				console.error(err);
-				new Notice('Failed to fetch Wikipedia page.');
+				new Notice('Could not fetch the Wikipedia page.');
 			}
 		});
 
 		this.addCommand({
 			id: 'insert-wiki-on-this-day',
-			name: 'Insert: Wikipedia “On this day” (today)',
+			name: 'Insert: Wikipedia for this day.',
 			editorCallback: async (editor: Editor) => {
 				try {
-					new Notice('Fetching Wikipedia “On this day”…');
+					new Notice('Fetching Wikipedia for this day…');
 					await this.insertTodayIntoActiveEditor(editor);
 					new Notice('Inserted.');
 				} catch (err) {
