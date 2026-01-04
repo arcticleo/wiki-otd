@@ -31,6 +31,26 @@ Click the **calendar-clock** icon in the left sidebar to insert today’s entry 
 
 ---
 
+## Settings
+
+### Timezone
+
+By default, the plugin uses your system timezone (**Auto**) to determine what “today” means.
+
+If you travel, or if you for any other reason want more control, you can switch to **Manual** timezone mode:
+
+- **Auto (default)**  
+  Uses your system’s current timezone.
+
+- **Manual**  
+  Lets you choose a specific timezone. When switching to Manual, the system-detected timezone is preselected for convenience.
+
+You can find this setting under:
+
+**Settings → On This Day in History**
+
+---
+
 ## Output Example
 
 ```md

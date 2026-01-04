@@ -1,18 +1,25 @@
 import {Editor, MarkdownView, Notice, Plugin, requestUrl} from 'obsidian';
 import TurndownService from 'turndown';
-import {DEFAULT_SETTINGS, MyPluginSettings, SampleSettingTab} from './settings';
+import {DEFAULT_SETTINGS, WikiOTDPluginSettings, WikiOTDSettingTab} from "./settings";
 
 export default class WikiOTDPlugin extends Plugin {
-	settings: MyPluginSettings;
+	settings: WikiOTDPluginSettings;
 
 	private wikipediaTitleForDate(date: Date): string {
-		// January 3 -> January_3
-		const parts = new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric' })
-			.formatToParts(date);
-
-		const month = parts.find(p => p.type === 'month')?.value ?? '';
-		const day = parts.find(p => p.type === 'day')?.value ?? '';
-
+		const timeZone =
+			this.settings.timeZoneMode === "manual"
+				? this.settings.manualTimeZone
+				: undefined;
+	
+		const parts = new Intl.DateTimeFormat("en-US", {
+			month: "long",
+			day: "numeric",
+			...(timeZone ? { timeZone } : {})
+		}).formatToParts(date);
+	
+		const month = parts.find(p => p.type === "month")?.value ?? "";
+		const day = parts.find(p => p.type === "day")?.value ?? "";
+	
 		return `${month}_${day}`;
 	}
 
@@ -140,7 +147,7 @@ export default class WikiOTDPlugin extends Plugin {
 		});
 
 		// Settings
-		this.addSettingTab(new SampleSettingTab(this.app, this));
+		this.addSettingTab(new WikiOTDSettingTab(this.app, this));
 	}
 
 	onunload() {}
