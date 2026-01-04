@@ -1,76 +1,149 @@
-import {App, Editor, MarkdownView, Modal, Notice, Plugin} from 'obsidian';
-import {DEFAULT_SETTINGS, MyPluginSettings, SampleSettingTab} from "./settings";
-
-// Remember to rename these classes and interfaces!
+import {Editor, MarkdownView, Notice, Plugin, requestUrl} from 'obsidian';
+import TurndownService from 'turndown';
+import {DEFAULT_SETTINGS, MyPluginSettings, SampleSettingTab} from './settings';
 
 export default class WikiOTDPlugin extends Plugin {
 	settings: MyPluginSettings;
 
+	private wikipediaTitleForDate(date: Date): string {
+		// January 3 -> January_3
+		const parts = new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric' })
+			.formatToParts(date);
+
+		const month = parts.find(p => p.type === 'month')?.value ?? '';
+		const day = parts.find(p => p.type === 'day')?.value ?? '';
+
+		return `${month}_${day}`;
+	}
+
+	private async insertTodayIntoActiveEditor(editor: Editor): Promise<void> {
+		const md = await this.fetchOnThisDayMarkdown(new Date());
+		editor.replaceSelection(md + '\n');
+	}
+
+	private async fetchOnThisDayMarkdown(date: Date): Promise<string> {
+		const title = this.wikipediaTitleForDate(date);
+
+		// MediaWiki Action API: parse page -> HTML
+		const url =
+			`https://en.wikipedia.org/w/api.php` +
+			`?action=parse&format=json&formatversion=2&redirects=1` +
+			`&prop=text&page=${encodeURIComponent(title)}`;
+
+		const res = await requestUrl({
+			url,
+			headers: {
+				// Wikimedia recommends a descriptive UA for API clients
+				'User-Agent': 'Obsidian-WikiOTDPlugin/0.1 (local)'
+			}
+		});
+
+		const json = res.json as any;
+		const html = json?.parse?.text as string | undefined;
+		if (!html) throw new Error('Unexpected API response');
+
+		const sectionsHtml = this.extractWikipediaSectionsHtml(html, ['Events', 'Births', 'Deaths']);
+
+		const turndown = new TurndownService({
+			headingStyle: 'atx',
+			bulletListMarker: '-'
+		});
+
+		// citations like [1]
+		turndown.remove(['sup']);
+
+		const bodyMd = turndown.turndown(sectionsHtml).trim();
+
+		const niceTitle = title.replace('_', ' ');
+		return `## ${niceTitle}\n\n${bodyMd}`;
+	}
+
+	private extractWikipediaSectionsHtml(html: string, sectionIds: string[]): string {
+		const container = document.createElement('div');
+		container.innerHTML = html;
+
+		// Remove common noise that still sneaks into extracted sections
+		container.querySelectorAll(
+			'.mw-editsection, .reference, .reflist, .navbox, .metadata, .ambox, .shortdescription, #toc'
+		).forEach(el => el.remove());
+
+		const out = document.createElement('div');
+
+		for (const id of sectionIds) {
+			const headline = container.querySelector(`#${CSS.escape(id)}`);
+			const h2 = headline?.closest('h2');
+			if (!h2) continue;
+
+			// MediaWiki sometimes wraps headings like: <div class="mw-heading ..."><h2>...</h2></div>
+			const start = h2.parentElement?.classList.contains('mw-heading') ? h2.parentElement : h2;
+
+			// Add a clean heading for the section
+			const heading = document.createElement('h2');
+			heading.textContent = id;
+			out.appendChild(heading);
+
+			// Copy siblings until the next section heading
+			let el = start.nextElementSibling;
+			while (el) {
+				// Stop at the next section heading (either direct <h2> or a mw-heading wrapper)
+				if (el.tagName.toLowerCase() === 'h2') break;
+				if (el.classList.contains('mw-heading') && el.querySelector('h2')) break;
+
+				out.appendChild(el.cloneNode(true));
+				el = el.nextElementSibling;
+			}
+		}
+
+		// Rewrite relative Wikipedia links to absolute
+		out.querySelectorAll<HTMLAnchorElement>('a[href^="/wiki/"]').forEach(a => {
+			a.href = `https://en.wikipedia.org${a.getAttribute('href')}`;
+		});
+
+		// Fallback: if nothing matched, return original (so it still inserts something)
+		return out.innerHTML.trim() || container.innerHTML;
+	}
+
 	async onload() {
 		await this.loadSettings();
 
-		// This creates an icon in the left ribbon.
-		this.addRibbonIcon('calendar-clock', 'On This Day in History', () => {
-		  new Notice('Fetching Today in History');
-		});
+		// Ribbon icon: inserts into the active markdown note
+		this.addRibbonIcon('calendar-clock', 'On This Day in History', async () => {
+			const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+			if (!view) {
+				new Notice('No active note');
+				return;
+			}
 
-		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText('Status bar text');
-
-		// This adds a simple command that can be triggered anywhere
-		this.addCommand({
-			id: 'open-modal-simple',
-			name: 'Open modal (simple)',
-			callback: () => {
-				new SampleModal(this.app).open();
+			try {
+				new Notice('Fetching Wikipedia “On this day”…');
+				await this.insertTodayIntoActiveEditor(view.editor);
+				new Notice('Inserted.');
+			} catch (err) {
+				console.error(err);
+				new Notice('Failed to fetch Wikipedia page.');
 			}
 		});
-		// This adds an editor command that can perform some operation on the current editor instance
-		this.addCommand({
-			id: 'replace-selected',
-			name: 'Replace selected content',
-			editorCallback: (editor: Editor, view: MarkdownView) => {
-				editor.replaceSelection('Sample editor command');
-			}
-		});
-		// This adds a complex command that can check whether the current state of the app allows execution of the command
-		this.addCommand({
-			id: 'open-modal-complex',
-			name: 'Open modal (complex)',
-			checkCallback: (checking: boolean) => {
-				// Conditions to check
-				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (markdownView) {
-					// If checking is true, we're simply "checking" if the command can be run.
-					// If checking is false, then we want to actually perform the operation.
-					if (!checking) {
-						new SampleModal(this.app).open();
-					}
 
-					// This command will only show up in Command Palette when the check function returns true
-					return true;
+		this.addCommand({
+			id: 'insert-wiki-on-this-day',
+			name: 'Insert: Wikipedia “On this day” (today)',
+			editorCallback: async (editor: Editor) => {
+				try {
+					new Notice('Fetching Wikipedia “On this day”…');
+					await this.insertTodayIntoActiveEditor(editor);
+					new Notice('Inserted.');
+				} catch (err) {
+					console.error(err);
+					new Notice('Failed to fetch Wikipedia page.');
 				}
-				return false;
 			}
 		});
 
-		// This adds a settings tab so the user can configure various aspects of the plugin
+		// Settings
 		this.addSettingTab(new SampleSettingTab(this.app, this));
-
-		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
-		// Using this function will automatically remove the event listener when this plugin is disabled.
-		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-			new Notice("Click");
-		});
-
-		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
-
 	}
 
-	onunload() {
-	}
+	onunload() {}
 
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData() as Partial<MyPluginSettings>);
@@ -78,21 +151,5 @@ export default class WikiOTDPlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
-	}
-}
-
-class SampleModal extends Modal {
-	constructor(app: App) {
-		super(app);
-	}
-
-	onOpen() {
-		let {contentEl} = this;
-		contentEl.setText('Woah!');
-	}
-
-	onClose() {
-		const {contentEl} = this;
-		contentEl.empty();
 	}
 }
