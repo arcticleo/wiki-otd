@@ -126,26 +126,26 @@ export default class WikiOTDPlugin extends Plugin {
 			}
 
 			try {
-				new Notice('Fetching Wikipedia page for today.');
+				new Notice('Retrieving today\'s information.');
 				await this.insertTodayIntoActiveEditor(view.editor);
 				new Notice('Inserted.');
 			} catch (err) {
 				console.error(err);
-				new Notice('Could not fetch the Wikipedia page for today.');
+				new Notice('Could not retrieve today\'s information.');
 			}
 		});
 
 		this.addCommand({
 			id: 'insert-wiki-on-this-day',
-			name: 'Insert Wikipedia page for today.',
+			name: 'Insert today\'s events from history.',
 			editorCallback: async (editor: Editor) => {
 				try {
-					new Notice('Fetching Wikipedia page for today.');
+					new Notice('Retrieving today\'s information.');
 					await this.insertTodayIntoActiveEditor(editor);
 					new Notice('Inserted.');
 				} catch (err) {
 					console.error(err);
-					new Notice('Failed to fetch Wikipedia page for today.');
+					new Notice('Failed to retrieve today\'s information.');
 				}
 			}
 		});
