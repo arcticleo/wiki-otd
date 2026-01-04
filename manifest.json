@@ -1,11 +1,11 @@
 {
-	"id": "sample-plugin",
-	"name": "Sample Plugin",
+	"id": "wiki-otd",
+	"name": "On This Day in History",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
+	"description": ".",
+	"author": "Michael Edlund",
+	"authorUrl": "https://eme.moi",
+	"fundingUrl": "https://eme.moi/wiki-otd",
 	"isDesktopOnly": false
 }
