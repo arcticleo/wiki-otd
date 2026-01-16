@@ -1,9 +1,9 @@
 import {App, Modal} from 'obsidian';
 
 export class DatePickerModal extends Modal {
-	private onSubmit: (date: Date) => void;
+	private onSubmit: (date: Date) => void | Promise<void>;
 
-	constructor(app: App, onSubmit: (date: Date) => void) {
+	constructor(app: App, onSubmit: (date: Date) => void | Promise<void>) {
 		super(app);
 		this.onSubmit = onSubmit;
 	}
@@ -16,13 +16,11 @@ export class DatePickerModal extends Modal {
 
 		// Container for dropdowns
 		const selectContainer = contentEl.createDiv();
-		selectContainer.style.display = "flex";
-		selectContainer.style.gap = "0.5em";
-		selectContainer.style.marginBottom = "1em";
+		selectContainer.addClass("wiki-otd-select-container");
 
 		// Month dropdown
 		const monthSelect = selectContainer.createEl("select");
-		monthSelect.style.flex = "2";
+		monthSelect.addClass("wiki-otd-select-month");
 		const months = [
 			"January", "February", "March", "April", "May", "June",
 			"July", "August", "September", "October", "November", "December"
@@ -38,7 +36,7 @@ export class DatePickerModal extends Modal {
 
 		// Day dropdown
 		const daySelect = selectContainer.createEl("select");
-		daySelect.style.flex = "1";
+		daySelect.addClass("wiki-otd-select-day");
 
 		// Helper to get days in month
 		const getDaysInMonth = (month: number): number => {
@@ -69,9 +67,7 @@ export class DatePickerModal extends Modal {
 
 		// Buttons
 		const buttonContainer = contentEl.createDiv();
-		buttonContainer.style.display = "flex";
-		buttonContainer.style.gap = "0.5em";
-		buttonContainer.style.justifyContent = "flex-end";
+		buttonContainer.addClass("wiki-otd-button-container");
 
 		const insertBtn = buttonContainer.createEl("button", {text: "Insert"});
 		insertBtn.addClass("mod-cta");
@@ -84,7 +80,7 @@ export class DatePickerModal extends Modal {
 			const day = parseInt(daySelect.value);
 			const date = new Date(2024, month, day); // Use any year as placeholder
 			this.close();
-			this.onSubmit(date);
+			void this.onSubmit(date);
 		});
 
 		cancelBtn.addEventListener("click", () => this.close());

@@ -230,7 +230,7 @@ export default class WikiOTDPlugin extends Plugin {
 		this.addCommand({
 			id: 'insert-wiki-on-this-day-date',
 			name: 'Insert historical events from a specific date.',
-			editorCallback: async (editor: Editor) => {
+			editorCallback: (editor: Editor) => {
 				new DatePickerModal(this.app, async (date: Date) => {
 					try {
 						new Notice('Retrieving information.');

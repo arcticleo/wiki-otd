@@ -6,3 +6,24 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
+
+/* Date picker modal styles */
+.wiki-otd-select-container {
+	display: flex;
+	gap: 0.5em;
+	margin-bottom: 1em;
+}
+
+.wiki-otd-select-month {
+	flex: 2;
+}
+
+.wiki-otd-select-day {
+	flex: 1;
+}
+
+.wiki-otd-button-container {
+	display: flex;
+	gap: 0.5em;
+	justify-content: flex-end;
+}
