@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
+	"name": "wiki-otd",
 	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"description": "Fetch what happened today in history from Wikipedia.",
 	"main": "main.js",
 	"type": "module",
 	"scripts": {
