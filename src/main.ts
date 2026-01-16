@@ -1,6 +1,7 @@
 import {Editor, MarkdownView, Notice, Plugin, requestUrl} from 'obsidian';
 import TurndownService from 'turndown';
 import {DEFAULT_SETTINGS, WikiOTDPluginSettings, WikiOTDSettingTab} from "./settings";
+import {DatePickerModal} from "./datePickerModal";
 
 export default class WikiOTDPlugin extends Plugin {
 	settings: WikiOTDPluginSettings;
@@ -223,6 +224,24 @@ export default class WikiOTDPlugin extends Plugin {
 					console.error(err);
 					new Notice('Failed to retrieve today\'s information.');
 				}
+			}
+		});
+
+		this.addCommand({
+			id: 'insert-wiki-on-this-day-date',
+			name: 'Insert historical events from a specific date.',
+			editorCallback: async (editor: Editor) => {
+				new DatePickerModal(this.app, async (date: Date) => {
+					try {
+						new Notice('Retrieving information.');
+						const md = await this.fetchOnThisDayMarkdown(date);
+						editor.replaceSelection(md + '\n');
+						new Notice('Inserted.');
+					} catch (err) {
+						console.error(err);
+						new Notice('Failed to retrieve information.');
+					}
+				}).open();
 			}
 		});
 

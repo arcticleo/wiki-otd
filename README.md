@@ -8,7 +8,7 @@ The plugin fetches the current day’s Wikipedia page (e.g. *January 3*), extrac
 
 ## Features
 
-- Fetches *today's* Wikipedia "On this day" content
+- Fetches Wikipedia "On this day" content for today or any specific date
 - Inserts directly into the active note
 - Automatically filters out page noise
 - Converts relative Wikipedia links to full URLs
@@ -20,15 +20,22 @@ The plugin fetches the current day’s Wikipedia page (e.g. *January 3*), extrac
 
 ## Usage
 
-### Insert via Command Palette
+### Insert Today's Events
+
+**Via Command Palette:**
+1. Open a Markdown note
+2. Open the Command Palette (`⌘P` / `Ctrl+P`)
+3. Run **"Insert today's events from history."**
+
+**Via Ribbon Icon:**
+Click the **calendar-clock** icon in the left sidebar to insert today's entry into the active note.
+
+### Insert Events from a Specific Date
 
 1. Open a Markdown note
 2. Open the Command Palette (`⌘P` / `Ctrl+P`)
-3. Run **“Insert: Wikipedia ‘On this day’ (today)”**
-
-### Insert via Ribbon Icon
-
-Click the **calendar-clock** icon in the left sidebar to insert today’s entry into the active note.
+3. Run **"Insert historical events from a specific date."**
+4. Select the month and day in the date picker dialog
 
 ---
 
