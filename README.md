@@ -8,10 +8,11 @@ The plugin fetches the current day’s Wikipedia page (e.g. *January 3*), extrac
 
 ## Features
 
-- Fetches *today’s* Wikipedia “On this day” content
+- Fetches *today's* Wikipedia "On this day" content
 - Inserts directly into the active note
 - Automatically filters out page noise
 - Converts relative Wikipedia links to full URLs
+- Customizable link display (inline, grouped, or none)
 - Clean, readable Markdown output
 - Works via command palette **or** ribbon icon
 
@@ -42,16 +43,66 @@ If you travel, or if you for any other reason want more control, you can switch 
 - **Auto (default)**  
   Uses your system’s current timezone.
 
-- **Manual**  
+- **Manual**
   Lets you choose a specific timezone. When switching to Manual, the system-detected timezone is preselected for convenience.
 
-You can find this setting under:
+### Link Display
+
+Control how Wikipedia links appear in the inserted content:
+
+- **Inline (default)**
+  Links appear naturally within the text, preserving the original Wikipedia formatting.
+
+- **Grouped**
+  Link text appears in the content without hyperlinks, and all links are collected under a "**Links**" section at the end of each subsection (Events, Births, Deaths).
+
+- **None**
+  All links are removed, leaving only plain text.
+
+You can find these settings under:
 
 **Settings → On This Day in History**
 
 ---
 
-## Output Example
+## Output Examples
+
+### Inline (default)
+
+```md
+## January 3
+
+## Events
+- [1521](https://en.wikipedia.org/wiki/1521) – [Martin Luther](https://en.wikipedia.org/wiki/Martin_Luther) is excommunicated from the [Catholic Church](https://en.wikipedia.org/wiki/Catholic_Church).
+
+## Births
+- [1892](https://en.wikipedia.org/wiki/1892) – [J. R. R. Tolkien](https://en.wikipedia.org/wiki/J._R._R._Tolkien), English author (d. 1973)
+```
+
+### Grouped
+
+```md
+## January 3
+
+## Events
+- 1521 – Martin Luther is excommunicated from the Catholic Church.
+
+**Links**
+
+- [1521](https://en.wikipedia.org/wiki/1521)
+- [Martin Luther](https://en.wikipedia.org/wiki/Martin_Luther)
+- [Catholic Church](https://en.wikipedia.org/wiki/Catholic_Church)
+
+## Births
+- 1892 – J. R. R. Tolkien, English author (d. 1973)
+
+**Links**
+
+- [1892](https://en.wikipedia.org/wiki/1892)
+- [J. R. R. Tolkien](https://en.wikipedia.org/wiki/J._R._R._Tolkien)
+```
+
+### None
 
 ```md
 ## January 3
@@ -61,9 +112,6 @@ You can find this setting under:
 
 ## Births
 - 1892 – J. R. R. Tolkien, English author (d. 1973)
-
-## Deaths
-- 2009 – Karyn Kupcinet, American actress (b. 1941)
 ```
 
 ## Installation

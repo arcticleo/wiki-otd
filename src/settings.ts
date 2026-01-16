@@ -2,15 +2,18 @@ import { App, PluginSettingTab, Setting } from "obsidian";
 import WikiOTDPlugin from "./main";
 
 export type TimeZoneMode = "auto" | "manual";
+export type LinkDisplayMode = "inline" | "grouped" | "none";
 
 export interface WikiOTDPluginSettings {
 	timeZoneMode: TimeZoneMode;
 	manualTimeZone: string;
+	linkDisplay: LinkDisplayMode;
 }
 
 export const DEFAULT_SETTINGS: WikiOTDPluginSettings = {
 	timeZoneMode: "auto",
-	manualTimeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"
+	manualTimeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+	linkDisplay: "inline"
 };
 
 const TIME_ZONES: string[] = [
@@ -133,6 +136,25 @@ export class WikiOTDSettingTab extends PluginSettingTab {
 
 				tzSelectEl = dropdown.selectEl;
 				tzSelectEl.disabled = this.plugin.settings.timeZoneMode !== "manual";
+			});
+
+		new Setting(containerEl)
+			.setName("Formatting")
+			.setHeading();
+
+		new Setting(containerEl)
+			.setName("Link display")
+			.setDesc("Choose how links are displayed in the inserted content.")
+			.addDropdown(dropdown => {
+				dropdown
+					.addOption("inline", "Inline")
+					.addOption("grouped", "Grouped")
+					.addOption("none", "None")
+					.setValue(this.plugin.settings.linkDisplay)
+					.onChange(async (value) => {
+						this.plugin.settings.linkDisplay = value as LinkDisplayMode;
+						await this.plugin.saveSettings();
+					});
 			});
 	}
 }

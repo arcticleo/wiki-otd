@@ -63,10 +63,86 @@ export default class WikiOTDPlugin extends Plugin {
 		// citations like [1]
 		turndown.remove(['sup']);
 
-		const bodyMd = turndown.turndown(sectionsHtml).trim();
+		let bodyMd = turndown.turndown(sectionsHtml).trim();
+
+		// Process links based on settings
+		bodyMd = this.processLinks(bodyMd);
 
 		const niceTitle = title.replace('_', ' ');
 		return `## ${niceTitle}\n\n${bodyMd}`;
+	}
+
+	private processLinks(markdown: string): string {
+		if (this.settings.linkDisplay === "inline") {
+			return markdown;
+		}
+
+		if (this.settings.linkDisplay === "none") {
+			// Strip all links, keeping just the text
+			return markdown.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
+		}
+
+		// Grouped mode: extract links and group them at the end of each subsection
+		return this.groupLinks(markdown);
+	}
+
+	private groupLinks(markdown: string): string {
+		// Split markdown into lines for processing
+		const lines = markdown.split('\n');
+		const result: string[] = [];
+		let currentSubsectionLines: string[] = [];
+		let currentSubsectionLinks: Array<{text: string, url: string}> = [];
+
+		const flushSubsection = () => {
+			if (currentSubsectionLines.length > 0) {
+				result.push(...currentSubsectionLines);
+
+				if (currentSubsectionLinks.length > 0) {
+					result.push(''); // blank line before links
+					result.push('**Links**');
+					result.push('');
+					for (const link of currentSubsectionLinks) {
+						result.push(`- [${link.text}](${link.url})`);
+					}
+				}
+
+				currentSubsectionLines = [];
+				currentSubsectionLinks = [];
+			}
+		};
+
+		for (const line of lines) {
+			// Check if this is a heading (### or ##)
+			const isHeading = /^#{2,3}\s/.test(line);
+
+			if (isHeading) {
+				// Flush the previous subsection
+				flushSubsection();
+				// Add the heading to result directly
+				result.push(line);
+			} else {
+				// Process the line to extract links
+				const processedLine = this.extractLinksFromLine(line, currentSubsectionLinks);
+				currentSubsectionLines.push(processedLine);
+			}
+		}
+
+		// Flush the last subsection
+		flushSubsection();
+
+		return result.join('\n');
+	}
+
+	private extractLinksFromLine(line: string, links: Array<{text: string, url: string}>): string {
+		// Match markdown links: [text](url) or [text](url "title")
+		const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+
+		return line.replace(linkRegex, (_match: string, text: string, url: string) => {
+			// Remove title attribute if present (e.g., "url "title"" -> "url")
+			const cleanUrl = url.trim().split(/\s+/)[0] ?? url;
+			links.push({ text: text, url: cleanUrl });
+			return text; // Replace link with just the text
+		});
 	}
 
 	private extractWikipediaSectionsHtml(html: string, sectionIds: string[]): string {
