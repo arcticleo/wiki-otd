@@ -80,7 +80,7 @@ export default class WikiOTDPlugin extends Plugin {
 
 		if (this.settings.linkDisplay === "none") {
 			// Strip all links, keeping just the text
-			return markdown.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
+			return markdown.replace(/\[([^\]]+)\]\((?:\\[()]|[^)\\"\s])*(?:\s+"[^"]*")?\)/g, "$1");
 		}
 
 		// Grouped mode: extract links and group them at the end of each subsection
@@ -136,7 +136,7 @@ export default class WikiOTDPlugin extends Plugin {
 
 	private extractLinksFromLine(line: string, links: Array<{text: string, url: string}>): string {
 		// Match markdown links: [text](url) or [text](url "title")
-		const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+		const linkRegex = /\[([^\]]+)\]\(((?:\\[()]|[^)\\"\s])*(?:\s+"[^"]*")?)\)/g;
 
 		return line.replace(linkRegex, (_match: string, text: string, url: string) => {
 			// Remove title attribute if present (e.g., "url "title"" -> "url")
