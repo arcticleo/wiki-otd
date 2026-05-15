@@ -1,6 +1,6 @@
 {
 	"name": "wiki-otd",
-	"version": "1.0.0",
+	"version": "1.2.0",
 	"description": "Fetch what happened today in history from Wikipedia.",
 	"main": "main.js",
 	"type": "module",
